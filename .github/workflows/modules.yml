@@ -75,8 +75,11 @@ jobs:
         run: |
           root=$(pwd)
           for dir in ./artifacts/*/; do
-            name=$(basename "$dir")
-            (cd "${dir}${{ env.NGINX_VERSION }}" && tar -czf "${root}/${name}.tar.gz" .)
+            arch=$(basename "$dir" | grep -oP 'linux-\w+$')
+            for so in "${dir}${{ env.NGINX_VERSION }}"/*.so; do
+              name=$(basename "$so" .so)
+              tar -czf "${root}/${name}-${arch}.tar.gz" -C "$(dirname "$so")" "$(basename "$so")"
+            done
           done
 
       - name: Create release
