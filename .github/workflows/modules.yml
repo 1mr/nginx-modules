@@ -19,30 +19,8 @@ permissions:
   contents: write
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    outputs:
-      nginx_version: ${{ steps.version.outputs.nginx_version }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 2
-
-      - name: Resolve NGINX_VERSION
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "nginx_version=${{ inputs.nginx_version }}" >> "$GITHUB_OUTPUT"
-          elif git rev-parse HEAD~1 > /dev/null 2>&1 && \
-               git diff HEAD~1 -- modules.sh ngx_brotli/Dockerfile ngx_geoip2/Dockerfile ngx_vts/Dockerfile | grep -q 'NGINX_VERSION'; then
-            VERSION=$(git diff HEAD~1 -- modules.sh ngx_brotli/Dockerfile ngx_geoip2/Dockerfile ngx_vts/Dockerfile | \
-                      grep '^+' | grep -oP '(?:NGINX_VERSION[=:"-]+)\K[0-9.]+' | head -1)
-            echo "nginx_version=${VERSION}" >> "$GITHUB_OUTPUT"
-          fi
-
   build:
     needs: check
-    if: needs.check.outputs.nginx_version != ''
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -82,7 +60,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [check, build]
+    needs: [build]
 
     steps:
       - name: Download artifacts
@@ -94,7 +72,8 @@ jobs:
         run: |
           for dir in ./artifacts/*/; do
             name=$(basename "$dir")
-            tar -czf "${name}.tar.gz" -C "$dir" .
+            cd "$(pwd)/${dir}${{ needs.check.outputs.nginx_version }}"
+            tar -czf "${root}/${name}.tar.gz" .
           done
 
       - name: Create release
