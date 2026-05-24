@@ -19,6 +19,9 @@ on:
 permissions:
   contents: write
 
+env:
+  NGINX_VERSION: ${{ inputs.nginx_version || '1.30.2' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -70,10 +73,10 @@ jobs:
 
       - name: Package artifacts
         run: |
+          root=$(pwd)
           for dir in ./artifacts/*/; do
             name=$(basename "$dir")
-            cd "$(pwd)/${dir}${{ env.NGINX_VERSION }}"
-            tar -czf "${root}/${name}.tar.gz" .
+            (cd "${dir}${{ env.NGINX_VERSION }}" && tar -czf "${root}/${name}.tar.gz" .)
           done
 
       - name: Create release
