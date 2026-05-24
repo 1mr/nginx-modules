@@ -4,6 +4,7 @@
     // Pin GitHub Action digests.       | https://docs.renovatebot.com/presets-helpers/#helperspingithubactiondigests
     "helpers:pinGitHubActionDigests"
   ],
+  "gitAuthor": "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
   "repositories": [
     "1mr/nginx-modules"
   ]
