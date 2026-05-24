@@ -14,13 +14,13 @@ on:
       - ngx_brotli/Dockerfile
       - ngx_geoip2/Dockerfile
       - ngx_vts/Dockerfile
+      - .github/workflows/modules.yml
 
 permissions:
   contents: write
 
 jobs:
   build:
-    needs: check
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,13 +28,13 @@ jobs:
         platform: [linux/amd64, linux/arm64]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@v4.0.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.1.0
 
       - name: Set arch
         run: |
@@ -46,16 +46,16 @@ jobs:
         run: |
           docker buildx build \
             --platform "${{ matrix.platform }}" \
-            --build-arg NGINX_VERSION=${{ needs.check.outputs.nginx_version }} \
+            --build-arg NGINX_VERSION=${{ env.NGINX_VERSION }} \
             --build-arg TARGETARCH=${{ env.TARGETARCH }} \
             --output type=local,dest=./output \
             -f ${{ matrix.module }}/Dockerfile \
             .
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
-          name: ${{ matrix.module }}-${{ needs.check.outputs.nginx_version }}-${{ env.ARCH }}
+          name: ${{ matrix.module }}-${{ env.NGINX_VERSION }}-${{ env.ARCH }}
           path: ./output/
 
   release:
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           path: ./artifacts
 
@@ -72,14 +72,14 @@ jobs:
         run: |
           for dir in ./artifacts/*/; do
             name=$(basename "$dir")
-            cd "$(pwd)/${dir}${{ needs.check.outputs.nginx_version }}"
+            cd "$(pwd)/${dir}${{ env.NGINX_VERSION }}"
             tar -czf "${root}/${name}.tar.gz" .
           done
 
       - name: Create release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v3.0.0
         with:
-          tag_name: nginx-${{ needs.check.outputs.nginx_version }}
-          name: Nginx ${{ needs.check.outputs.nginx_version }} Modules
+          tag_name: nginx-${{ env.NGINX_VERSION }}
+          name: Nginx ${{ env.NGINX_VERSION }} Modules
           make_latest: true
           files: '*.tar.gz'
