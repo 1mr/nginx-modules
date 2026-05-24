@@ -25,13 +25,13 @@ jobs:
         platform: [linux/amd64, linux/arm64]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4.1
 
       - name: Set arch
         run: echo "ARCH=$(echo '${{ matrix.platform }}' | tr '/' '-')" >> "$GITHUB_ENV"
@@ -46,7 +46,7 @@ jobs:
             .
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.module }}-${{ env.NGINX_VERSION }}-${{ env.ARCH }}
           path: ./output/
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ./artifacts
 
@@ -69,9 +69,9 @@ jobs:
           done
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: nginx-${{ env.NGINX_VERSION }}
           name: Nginx ${{ env.NGINX_VERSION }} Modules
           make_latest: true
-          files: "*.tar.gz"
+          files: '*.tar.gz'
