@@ -3,8 +3,5 @@
   "extends": [
     // Pin GitHub Action digests.       | https://docs.renovatebot.com/presets-helpers/#helperspingithubactiondigests
     "helpers:pinGitHubActionDigests"
-  ],
-  "repositories": [
-    "1mr/nginx-modules"
   ]
 }

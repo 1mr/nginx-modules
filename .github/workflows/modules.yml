@@ -9,15 +9,40 @@ on:
         required: true
   push:
     branches: ['master', 'main']
+    paths:
+      - modules.sh
+      - ngx_brotli/Dockerfile
+      - ngx_geoip2/Dockerfile
+      - ngx_vts/Dockerfile
 
 permissions:
   contents: write
 
-env:
-  NGINX_VERSION: ${{ inputs.nginx_version || '1.30.2' }}
-
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      nginx_version: ${{ steps.version.outputs.nginx_version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Resolve NGINX_VERSION
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "nginx_version=${{ inputs.nginx_version }}" >> "$GITHUB_OUTPUT"
+          elif git rev-parse HEAD~1 > /dev/null 2>&1 && \
+               git diff HEAD~1 -- modules.sh ngx_brotli/Dockerfile ngx_geoip2/Dockerfile ngx_vts/Dockerfile | grep -q 'NGINX_VERSION'; then
+            VERSION=$(git diff HEAD~1 -- modules.sh ngx_brotli/Dockerfile ngx_geoip2/Dockerfile ngx_vts/Dockerfile | \
+                      grep '^+' | grep -oP '(?:NGINX_VERSION[=:"-]+)\K[0-9.]+' | head -1)
+            echo "nginx_version=${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: check
+    if: needs.check.outputs.nginx_version != ''
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -43,7 +68,7 @@ jobs:
         run: |
           docker buildx build \
             --platform "${{ matrix.platform }}" \
-            --build-arg NGINX_VERSION=${{ env.NGINX_VERSION }} \
+            --build-arg NGINX_VERSION=${{ needs.check.outputs.nginx_version }} \
             --build-arg TARGETARCH=${{ env.TARGETARCH }} \
             --output type=local,dest=./output \
             -f ${{ matrix.module }}/Dockerfile \
@@ -52,12 +77,12 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.module }}-${{ env.NGINX_VERSION }}-${{ env.ARCH }}
+          name: ${{ matrix.module }}-${{ needs.check.outputs.nginx_version }}-${{ env.ARCH }}
           path: ./output/
 
   release:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [check, build]
 
     steps:
       - name: Download artifacts
@@ -75,7 +100,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: nginx-${{ env.NGINX_VERSION }}
-          name: Nginx ${{ env.NGINX_VERSION }} Modules
+          tag_name: nginx-${{ needs.check.outputs.nginx_version }}
+          name: Nginx ${{ needs.check.outputs.nginx_version }} Modules
           make_latest: true
           files: '*.tar.gz'

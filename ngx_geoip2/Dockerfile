@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
   libmaxminddb0 libmaxminddb-dev mmdb-bin \
   libxml2-dev libxslt-dev libgd-dev \
   build-essential \
-  cmake \
   make \
   libpcre2-dev \
   libssl-dev \
