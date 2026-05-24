@@ -21,10 +21,16 @@ RUN \
   && git clone --recurse-submodules https://github.com/google/ngx_brotli.git
 
 WORKDIR /build/ngx_brotli/deps/brotli/
+ARG TARGETARCH="amd64"
 RUN \
+  case "$TARGETARCH" in \
+    amd64) ARCH_FLAGS="-m64 -march=x86-64 -mtune=generic" ;; \
+    arm64) ARCH_FLAGS="-march=armv8-a -mtune=generic" ;; \
+  esac && \
+  FLAGS="-Ofast ${ARCH_FLAGS} -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" && \
   cmake -B ./out/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_C_FLAGS="-Ofast -m64 -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-  -DCMAKE_CXX_FLAGS="-Ofast -m64 -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+  -DCMAKE_C_FLAGS="${FLAGS}" \
+  -DCMAKE_CXX_FLAGS="${FLAGS}" \
   && cmake --build ./out/ --config Release --target brotlienc
 
 WORKDIR /build/nginx-${NGINX_VERSION}/

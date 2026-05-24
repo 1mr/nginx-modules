@@ -34,13 +34,17 @@ jobs:
         uses: docker/setup-buildx-action@v4.1
 
       - name: Set arch
-        run: echo "ARCH=$(echo '${{ matrix.platform }}' | tr '/' '-')" >> "$GITHUB_ENV"
+        run: |
+          ARCH=$(echo '${{ matrix.platform }}' | tr '/' '-')
+          echo "ARCH=${ARCH}" >> "$GITHUB_ENV"
+          echo "TARGETARCH=${ARCH#linux-}" >> "$GITHUB_ENV"
 
       - name: Build ${{ matrix.module }}
         run: |
           docker buildx build \
-            --platform ${{ matrix.platform }} \
+            --platform "${{ matrix.platform }}" \
             --build-arg NGINX_VERSION=${{ env.NGINX_VERSION }} \
+            --build-arg TARGETARCH=${{ env.TARGETARCH }} \
             --output type=local,dest=./output \
             -f ${{ matrix.module }}/Dockerfile \
             .

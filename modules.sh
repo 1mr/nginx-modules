@@ -2,8 +2,19 @@
 
 set -e
 
-NGINX_VERSION="1.30.2"
+NGINX_VERSION="${NGINX_VERSION:-1.30.2}"
+PLATFORMS="${PLATFORMS:-linux/amd64}"
+# PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
 
-docker build -f ngx_brotli/Dockerfile --build-arg NGINX_VERSION="${NGINX_VERSION}" --output type=local,dest=./modules .
-docker build -f ngx_geoip2/Dockerfile --build-arg NGINX_VERSION="${NGINX_VERSION}" --output type=local,dest=./modules .
-docker build -f ngx_vts/Dockerfile --build-arg NGINX_VERSION="${NGINX_VERSION}" --output type=local,dest=./modules .
+for p in $(echo "${PLATFORMS}" | tr ',' ' '); do
+  arch=$(echo "${p}" | tr '/' '-')
+  for m in ngx_brotli ngx_geoip2 ngx_vts; do
+    docker buildx build \
+      --platform "${p}" \
+      --build-arg NGINX_VERSION="${NGINX_VERSION}" \
+      --build-arg TARGETARCH="${p#linux/}" \
+      --output "type=local,dest=./modules/${arch}" \
+      -f "${m}/Dockerfile" \
+      .
+  done
+done
