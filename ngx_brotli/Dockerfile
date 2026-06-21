@@ -1,4 +1,4 @@
-ARG NGINX_VERSION="1.30.2"
+ARG NGINX_VERSION="1.30.3"
 
 FROM debian:13 AS builder
 
@@ -24,8 +24,8 @@ WORKDIR /build/ngx_brotli/deps/brotli/
 ARG TARGETARCH="amd64"
 RUN \
   case "$TARGETARCH" in \
-    amd64) ARCH_FLAGS="-m64 -march=x86-64 -mtune=generic" ;; \
-    arm64) ARCH_FLAGS="-march=armv8-a -mtune=generic" ;; \
+  amd64) ARCH_FLAGS="-m64 -march=x86-64 -mtune=generic" ;; \
+  arm64) ARCH_FLAGS="-march=armv8-a -mtune=generic" ;; \
   esac && \
   FLAGS="-Ofast ${ARCH_FLAGS} -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" && \
   cmake -B ./out/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \

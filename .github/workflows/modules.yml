@@ -5,7 +5,7 @@ on:
     inputs:
       nginx_version:
         description: Nginx version
-        default: '1.30.2'
+        default: '1.30.3'
         required: true
   push:
     branches: ['master', 'main']
@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 env:
-  NGINX_VERSION: ${{ inputs.nginx_version || '1.30.2' }}
+  NGINX_VERSION: ${{ inputs.nginx_version || '1.30.3' }}
 
 jobs:
   build:

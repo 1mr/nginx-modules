@@ -2,7 +2,7 @@
 
 set -e
 
-NGINX_VERSION="${NGINX_VERSION:-1.30.2}"
+NGINX_VERSION="${NGINX_VERSION:-1.30.3}"
 PLATFORMS="${PLATFORMS:-linux/amd64}"
 # PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
 

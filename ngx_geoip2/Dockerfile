@@ -1,4 +1,4 @@
-ARG NGINX_VERSION="1.30.2"
+ARG NGINX_VERSION="1.30.3"
 
 FROM debian:13 AS builder
 
