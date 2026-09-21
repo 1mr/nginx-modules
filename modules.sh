@@ -5,7 +5,7 @@ set -e
 NGINX_VERSION="${NGINX_VERSION:-1.30.5}"
 PLATFORMS="${PLATFORMS:-linux/amd64}"
 # PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
-DEBIAN_VERSIONS="${DEBIAN_VERSIONS:-11,12,13}"
+DEBIAN_VERSIONS="${DEBIAN_VERSIONS:-12,13}"
 
 for p in $(echo "${PLATFORMS}" | tr ',' ' '); do
   arch=$(echo "${p}" | tr '/' '-')

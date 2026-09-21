@@ -6,9 +6,7 @@ FROM debian:${DEBIAN_VERSION} AS builder
 ARG NGINX_VERSION
 ENV NGINX_VERSION=$NGINX_VERSION DEBIAN_FRONTEND=noninteractive
 
-RUN . /etc/os-release \
-  && if [ "$VERSION_ID" = "11" ]; then sed -i '/debian-security/d' /etc/apt/sources.list; fi \
-  && apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y \
   build-essential \
   cmake \
   make \
