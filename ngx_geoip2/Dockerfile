@@ -6,7 +6,11 @@ FROM debian:${DEBIAN_VERSION} AS builder
 ARG NGINX_VERSION
 ENV NGINX_VERSION=$NGINX_VERSION DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
+# bullseye-security still publishes an index but its pool has been purged,
+# so every deb11u* package it advertises 404s; build from bullseye main instead.
+RUN . /etc/os-release \
+  && if [ "$VERSION_ID" = "11" ]; then sed -i '/debian-security/d' /etc/apt/sources.list; fi \
+  && apt-get update && apt-get install -y \
   libmaxminddb0 libmaxminddb-dev mmdb-bin \
   libxml2-dev libxslt-dev libgd-dev \
   build-essential \
