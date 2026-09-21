@@ -1,6 +1,7 @@
 ARG NGINX_VERSION="1.30.5"
+ARG DEBIAN_VERSION="13"
 
-FROM debian:13 AS builder
+FROM debian:${DEBIAN_VERSION} AS builder
 
 ARG NGINX_VERSION
 ENV NGINX_VERSION=$NGINX_VERSION DEBIAN_FRONTEND=noninteractive
@@ -30,4 +31,5 @@ RUN cp /build/nginx-${NGINX_VERSION}/objs/*.so ./
 
 FROM scratch
 ARG NGINX_VERSION
-COPY --from=builder /modules/ ${NGINX_VERSION}/
+ARG DEBIAN_VERSION
+COPY --from=builder /modules/ ${NGINX_VERSION}/debian${DEBIAN_VERSION}/
